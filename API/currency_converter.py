@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#coding:utf-8
+# coding: utf-8
 
 ## Currency Converter
 ## Author: Juraj Gressa 
@@ -7,38 +7,30 @@
 import optparse
 import json
 import requests
+from flask import Flask, request
+from flask_restful import Resource, Api
 
-def main():
-  
-  parser = optparse.OptionParser()
-  
-  parser.add_option('-a', '--amount',
-    action="store", dest="amount",
-    help="amount which you want to convert", default=0)
+app = Flask(__name__)
+api = Api(app)
 
-  parser.add_option('-i', '--input_currency',
-    action="store", dest="in_curr",
-    help="input currency - 3 letters name or currency symbol", default="EUR")
+@app.route('/currency_converter')
+def currency_exchange():
+  amount = request.args.get('amount', 0)
+  f_in_curr = request.args.get('input_currency','EUR')
+  f_out_curr = request.args.get('output_currency', 'all')
 
-  parser.add_option('-o', '--output_currency',
-    action="store", dest="out_curr",
-    help="requested/output currency - 3 letters name or currency symbol", default="all")
+  out_curr = f_out_curr.replace(u'Â',u'')
+  in_curr = f_in_curr.replace(u'Â',u'')
 
-  options, remainder = parser.parse_args()
-
-  if(len(options.out_curr) == 1):
-    out_curr = sym_to_curr(options.out_curr)
-  else: 
-    out_curr = options.out_curr
-
-  if(len(options.in_curr) == 1):
-    in_curr = sym_to_curr(options.in_curr)
-  else:
-    in_curr = options.in_curr
+  if(len(out_curr) == 1):
+    out_curr = sym_to_curr(out_curr)
+ 
+  if(len(in_curr) == 1):
+    in_curr = sym_to_curr(in_curr)
 
   out_curr_val = get_currency_rates(in_curr, out_curr)
 
-  print_output(in_curr, out_curr, float(options.amount), out_curr_val)
+  return(print_output(in_curr, out_curr, float(amount), out_curr_val))
 
 # Associate symbol with the currency
 def sym_to_curr(x):
@@ -87,7 +79,7 @@ def print_output(in_curr, out_curr, amount, out_curr_val):
       rate_value = out_curr_val['rates'][rate] * amount
       data['output'][rate] = rate_value
 
-  print(json.dumps(data, sort_keys=True, indent=4,separators=(',',': ')))
+  return(json.dumps(data, sort_keys=True, indent=4,separators=(',',': ')))
 
 if __name__ == "__main__":
-    main()
+    app.run()
