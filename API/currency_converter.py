@@ -11,7 +11,6 @@ from flask import Flask, request
 from flask_restful import Resource, Api
 
 app = Flask(__name__)
-api = Api(app)
 
 @app.route('/currency_converter')
 def currency_exchange():
